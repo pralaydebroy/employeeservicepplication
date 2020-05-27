@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<munit:config name="employeeserviceapp-test-suite.xml" />
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="f9a6279d-c5c2-417d-b98a-3820c316f034" >
+		<http:request-connection host="localhost" port="8081" />
+	</http:request-config>
+	<munit:test name="get-employee-by-Id" doc:id="3cc0d874-3f06-46ac-b139-3d6bf7166760" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="af509f16-e936-4540-8fb3-11e83a5d8c9d" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Select" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[
+[{
+	firstName: "Pralay",
+	lastName: "Debroy",
+	role: "Analyst",
+	id: "112",
+	age: "32"
+}]
+]' />
+				</munit-tools:then-return>
+				
+				
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Query String" doc:id="0f7f2994-e4f4-4ba9-b18c-8db0a5a2c3be" >
+				<munit:attributes value='#[{queryString: "/employee/112"}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to get:\employee:employeeserviceapp-config" doc:id="c04bb293-09b0-413a-8a30-7d4a4f6b49d1" name="get:\employee\(id):employeeserviceapp-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert payload is expected" doc:id="ab7bd2a7-8135-4b8e-9ea6-dba35653566f" actual="#[payload]" expected='#[{
+	firstName: "Pralay",
+	lastName: "Debroy",
+	role: "Analyst",
+	id: "112",
+	age: "32"
+}]' message="The response payload is not correct!"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-employee-by-Id-error" doc:id="d83ce287-c392-4593-85d9-aecb7fd546f8" description="Test" expectedErrorType="EMPLOYEE:INVALID_DATA" expectedErrorDescription="No records available for the selected id">
+			<munit:behavior>
+				<munit-tools:mock-when doc:name="Mock when" doc:id="1d3c2cf6-bf31-4f0f-9d58-868042c88a87" processor="db:select">
+					<munit-tools:with-attributes>
+						<munit-tools:with-attribute whereValue="Select" attributeName="doc:name" />
+					</munit-tools:with-attributes>
+					<munit-tools:then-return>
+						<munit-tools:payload value='#[
+[{
+	firstName: null,
+	lastName: null,
+	role: null,
+	id: null,
+	age: null
+}]
+]' />
+					</munit-tools:then-return>
+				</munit-tools:mock-when>
+			</munit:behavior>
+			<munit:execution>
+				<munit:set-event doc:name="Set Query String" doc:id="648390d4-294c-4468-b90c-80a223316ae3">
+					<munit:attributes value='#[{queryString: "/employee/112"}]' />
+				</munit:set-event>
+				<flow-ref doc:name="Flow-ref to get:\employee:employeeserviceapp-config" doc:id="a277098d-c7a8-4e39-899c-36e8742b047a" name="get:\employee\(id):employeeserviceapp-config" />
+			</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that status is 500" doc:id="cdeb6797-8b2a-4bb9-92ef-73c1ed6c861a" expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(500)]" message="The HTTP Status code is not correct!"/>
+		</munit:validation>
+		</munit:test>
+	<munit:test name="add-employee-record" doc:id="cca9f871-fd46-4394-816f-7e8041c36b0c" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="8453b018-fa8b-46a1-955b-3a57e6bcc35d" processor="db:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Insert" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[""]' />
+				</munit-tools:then-return>
+				
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-Ref to post:\employee:application\json:employeeserviceapp-config" doc:id="860e515d-abee-4584-9490-b5434de00d23" name="post:\employee:application\json:employeeserviceapp-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert payload equals expected" doc:id="58a5c4a0-b737-44d3-b5a1-ad4ed9a88aa7" actual="#[payload]" expected='#[{message: "employee record successfully created"}]' message="#['The payload is not as expected']"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="update-employee-record" doc:id="80016f6c-328e-4caa-acf2-5aab1320b6db" description="Test">
+		<munit:behavior>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="5bad8876-2f6a-4c62-a523-de68bbd2ba04" processor="db:update">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Update" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[{affectedRows: 1}]" />
+				</munit-tools:then-return>
+	
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to put:\employee\(id):application\json:employeeserviceapp-config" doc:id="50bcb499-29dd-4b42-9f06-554155c71358" name="put:\employee\(id):application\json:employeeserviceapp-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert paylaod equals expected" doc:id="715d6441-a381-4a01-8ead-bbffacd8708e" actual="#[payload]" expected='#[{
+  message: "employee record successfully updated"
+}]' message="The Payload returned is not as expected"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="update-employee-record-error" doc:id="0ebac300-e193-47f5-b0cf-bfb399261db4" description="Test" expectedErrorType="EMPLOYEE:INVALID_DATA" expectedErrorDescription="No records available for the selected id">
+		<munit:behavior>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="669a58e4-6631-4686-b116-035d2959a352" processor="db:update">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Update" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[{affectedRows: 0}]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to put:\employee\(id):application\json:employeeserviceapp-config" doc:id="8b1b55ad-3d61-4b25-b60a-bfdee1bce18f" name="put:\employee\(id):application\json:employeeserviceapp-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that status is 500" doc:id="91483912-6190-4396-a82d-e3b0c1f43c01" message="The HTTP Status code is not correct!" expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(500)]" />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="delete-employee-record" doc:id="2214d4ae-1f15-467a-a8c9-7b76fcc3673a" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="01f9006e-5103-417d-b6fc-175a55fd94bf" processor="db:delete">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Delete" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[1]" />
+				</munit-tools:then-return>
+				
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to delete:\employee\(id):employeeserviceapp-config" doc:id="560a74e0-0e18-4ecd-8008-508205a638ce" name="delete:\employee\(id):employeeserviceapp-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert payload equals expected" doc:id="ee1a8f07-1bc9-49ee-bf0e-faa6149bf6f1" actual="#[payload]" expected='#[{
+  message: "employee record successfully deleted"
+}]' message="The payload is not as expected"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="delete-employee-record-error" doc:id="1ecd6f07-5a59-4f10-8f47-237cbb557ae2" description="Test" expectedErrorType="EMPLOYEE:INVALID_DATA" expectedErrorDescription="No records available for the selected id">
+			<munit:behavior>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="9031359f-f4de-4733-8d5d-96d242961251" processor="db:delete">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Delete" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[0]" />
+				</munit-tools:then-return>
+				
+			</munit-tools:mock-when>
+			</munit:behavior>
+		<munit:execution>
+				<flow-ref doc:name="Flow-ref to delete:\employee\(id):employeeserviceapp-config" doc:id="7e754945-04ee-49d1-b26e-6877f2cf7d85" name="delete:\employee\(id):employeeserviceapp-config" />
+			</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that status is 500" doc:id="0f4e907e-e6eb-44ee-aa6a-63ea8b30889c" message="The HTTP Status code is not correct!" expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(500)]" />
+		</munit:validation>
+		</munit:test>
+	<munit:test name="get-all-employees" doc:id="9761f6f2-3263-4854-b520-2ba33193f878" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="645d80c1-d744-4a32-833b-eee72ee0f9a0" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Select" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[[{
+	firstName: "Pralay",
+	lastName: "Debroy",
+	role: "Analyst",
+	id: "112",
+	age: "32"
+},
+{
+	firstName: "Shankar",
+	lastName: "Debroy",
+	role: "Analyst",
+	id: "113",
+	age: "34"
+}
+]]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get:\employee:employeeserviceapp-config" doc:id="371cb683-94f2-44f5-8839-232bedbc7286" name="get:\employee:employeeserviceapp-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert payload equals expected" doc:id="69db6856-a613-4d5c-95ba-5e78ced15b36" actual="#[payload]" expected='#[[{id: "112",
+name: "Pralay Debroy"},
+{id: "113",
+name: "Shankar Debroy"}
+]]' message="The payload is not as expected"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-employee-by-name-role" doc:id="f017f8a0-1c64-428c-aab6-db95edec2eb5" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="41ae6cc9-2fa3-4297-b69e-480a741c8890" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Select" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[[{
+	firstName: "Pralay",
+	lastName: "Debroy",
+	role: "Analyst",
+	id: "112",
+	age: "32"
+}]]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="1fc649ef-3bbe-4ed4-a4a8-fbbe547c32e9" >
+				<munit:attributes value="#[[{queryParams: {name: 'Pralay'}}, {queryParams: {role:'Analyst'}}]]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to get:\employee:employeeserviceapp-config" doc:id="f5118fc7-01a5-4a41-aa44-17b0a2095764" name="get:\employee:employeeserviceapp-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert payload equals expected" doc:id="7b876a37-400e-4084-b93b-13309bea1877" actual="#[payload]" expected='#[[{id: "112",
+name: "Pralay Debroy"}]]' message="The payload is not as expected"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="main-flow" doc:id="1960046e-4108-4e9f-b22e-ed49e93cc09d" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="b12bb44b-aa40-485d-b43d-56a0a82ef9a9" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="employeeserviceapp-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to employeeserviceapp-main" doc:id="2cbc3ef0-8634-45b3-a84c-27edddea930f" name="employeeserviceapp-main"/>
+		</munit:execution>
+	</munit:test>
+
+
+</mule>

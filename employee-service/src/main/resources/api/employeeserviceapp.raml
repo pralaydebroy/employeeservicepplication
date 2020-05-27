@@ -1,0 +1,98 @@
+#%RAML 1.0
+title: employeeServiceApp
+version: 1.0
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/4dd0665e-2ace-490a-a25a-183fe401d895/ # baseUri: http://employeeservice.com/api/{version}
+mediaType: 
+  - application/json
+
+
+types:
+  employee:
+    properties:
+      id: integer
+      firstName: string
+      lastName: string
+      age?: integer
+      role?: string
+
+  error:
+    properties:
+      code: integer
+      message: string
+
+/employee:
+  get:
+    description: List all employee maching query criteria if given else will list all employees
+    queryParameters:
+      name?: string
+      role?: string
+    responses:
+      200:
+        body:
+          application/json:
+            
+            example:
+              [
+                {"id":106, "name": "Pralay"},
+                {"id":107, "name": "Roy"}
+              ]
+
+
+  post:
+    description: Create new employee
+    body:
+      application/json:
+        type: employee
+        example:
+          { "firstName": "Pralay","lastName": "Debroy","age": 32,"role": "Analyst","id": 112 }
+
+    responses:
+      201:
+        body:
+          application/json:
+            example:
+              {"message":"employee record successfully created"}
+
+
+
+  /{id}:
+    get:
+      description: Get an employee by id
+      responses:
+        200:
+          body:
+            application/json:
+              type: employee
+              example:
+                { "firstName": "Pralay","lastName": "Debroy","age": 32,"role": "Analyst","id": 112 }
+
+    put:
+      description: Update employee by id
+      body:
+        application/json:
+          
+          example:
+            { "firstName": "Pralay","lastName": "Debroy","age": 32,"role": "Analyst"}
+      responses:
+        200:
+          body:
+            application/json:
+              example:
+                {"message":"employee record successfully updated"}
+
+    delete:
+      description: Delete an employee
+      responses:
+        200:
+          body:
+            application/json:
+              example:
+                 {"message":"employee record successfully deleted"}
+        400:
+          body:
+            application/json:
+              type: error
+              example:
+                 {
+                   "code":1000,
+                   "message":"Id not found"}

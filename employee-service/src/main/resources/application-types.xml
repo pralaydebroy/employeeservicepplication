@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="allemp" format="json">
+      <types:shape format="weave" example="examples/allemprespsample.json"><![CDATA[%dw 2.0
+
+type allemp = Array<{|  id: Number {"typeId": "int"},   name: String|}> {"example": "[{\\\"id\\\":106,\\\"name\\\":\\\"Pralay\\\"},{\\\"id\\\":107,\\\"name\\\":\\\"Roy\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#0cd1f812-3a74-430a-88e8-d637a4a1f9ba">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="allemp"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#76cf0e8b-bd23-49fb-a221-dc0e50f80d9d">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="allemp"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>
