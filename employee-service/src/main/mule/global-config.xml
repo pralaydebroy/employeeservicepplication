@@ -11,7 +11,7 @@ http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/m
     </http:listener-config>
     <apikit:config name="employeeserviceapp-config" api="employeeserviceapp.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <db:config name="Database_Config" doc:name="Database Config" doc:id="fa98f54a-fa46-41b1-993e-01f3433a22d7" >
-		<db:my-sql-connection host="localhost" port="3306" user="root" password="password" database="employee_info" />
+		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.user}" password="${db.password}" database="${db.database}" />
 	</db:config>
 	<configuration-properties doc:name="Configuration properties" doc:id="e8502eed-6c02-44f2-8c12-c0030f21999f" file="mule.${env}.properties" />
 	<global-property doc:name="Global Property" doc:id="392aa2ba-037a-4478-a978-5d3369d307c4" name="env" value="Prod" />
